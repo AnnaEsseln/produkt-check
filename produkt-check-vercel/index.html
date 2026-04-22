@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Produkt-Check</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#ebe9e2;--bg2:#e0ddd5;--accent:#a26a25;--accent-light:#c4893d;--accent-pale:#f3e9da;--text:#1e1a14;--text-muted:#7a7267;--border:rgba(162,106,37,0.18);--white:#faf9f5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);font-family:'Montserrat',sans-serif;color:var(--text);min-height:100vh}
+  header{padding:3rem 2rem 2rem;text-align:center}
+  .hline{width:48px;height:1.5px;background:var(--accent);margin:0 auto 1.25rem}
+  header h1{font-family:'Georgia',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:normal;color:var(--text);letter-spacing:-.01em;line-height:1.15;margin-bottom:.6rem}
+  header h1 em{font-style:italic;color:var(--accent)}
+  header .sub{font-size:13px;color:var(--text-muted);font-weight:400;letter-spacing:.04em;text-transform:uppercase}
+  .elara{font-size:12.5px;color:var(--text-muted);margin-top:.9rem;line-height:1.65;max-width:480px;margin-left:auto;margin-right:auto}
+  main{max-width:780px;margin:0 auto;padding:0 1.5rem 5rem}
+  .form-card{background:var(--white);border-radius:20px;padding:2.5rem 2.5rem 2rem;border:1px solid var(--border);margin-bottom:2.5rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .field{margin-bottom:1.25rem}
+  .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px}
+  .field label span{font-weight:400;text-transform:none;letter-spacing:0;color:#b0a99a;font-size:10px;margin-left:4px}
+  .field input,.field textarea{width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:10px;padding:11px 14px;font-family:'Montserrat',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s,background .2s}
+  .field input::placeholder,.field textarea::placeholder{color:#b5af9c}
+  .field input:focus,.field textarea:focus{border-color:var(--accent);background:var(--white)}
+  .field textarea{resize:vertical;min-height:88px;line-height:1.55}
+  .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+  .tc{background:var(--bg);border:1.5px solid transparent;border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .2s;user-select:none}
+  .tc:hover{border-color:rgba(162,106,37,.35);background:var(--accent-pale)}
+  .tc.sel{border-color:var(--accent);background:var(--accent-pale)}
+  .tc-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+  .tc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+  .tc.sel .tc-name{color:var(--accent)}
+  .tc-price{font-size:11px;color:var(--text-muted)}
+  .ptyp{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+  .dv{height:1px;background:var(--border);margin:1.75rem 0}
+  .tfm{display:grid;grid-template-columns:1fr auto 1fr;align-items:start}
+  .tarr{display:flex;align-items:center;justify-content:center;padding:0 12px;margin-top:28px;color:var(--accent)}
+  .cta{display:flex;justify-content:center;margin-top:1.75rem}
+  .btn-check{background:var(--accent);color:#faf9f5;border:none;border-radius:50px;padding:14px 40px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .15s;display:flex;align-items:center;gap:10px;width:100%;justify-content:center}
+  .btn-check:hover{background:var(--accent-light);transform:translateY(-1px)}
+  .btn-check:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .spin{width:16px;height:16px;border:2px solid rgba(250,249,245,.35);border-top-color:#faf9f5;border-radius:50%;animation:sp .7s linear infinite;display:none}
+  .btn-check.loading .spin{display:block}
+  .btn-check.loading .bt{opacity:.6}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #results{display:none}
+  .zusammenfassung{background:var(--white);border-radius:18px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem}
+  .zf-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+  .zf-text{font-size:13.5px;line-height:1.7;color:var(--text)}
+  .zf-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:50px;margin-bottom:.875rem}
+  .zf-ja{background:#d4f0e0;color:#1a6e3c}
+  .zf-nein{background:#fde0e0;color:#8a1a1a}
+  .rc{background:var(--white);border-radius:18px;border:1px solid var(--border);overflow:hidden;margin-bottom:1.25rem;animation:fu .4s ease both}
+  @keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .rch{display:flex;align-items:center;gap:14px;padding:1.25rem 1.5rem;cursor:pointer;user-select:none}
+  .rcs{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .rcb{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:50px;flex-shrink:0}
+  .rcl{font-size:13px;font-weight:600;color:var(--text);flex:1}
+  .rct{width:26px;height:26px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .rct svg{transition:transform .25s}
+  .rc.op .rct svg{transform:rotate(180deg)}
+  .rcbd{max-height:0;overflow:hidden;transition:max-height .4s ease}
+  .rc.op .rcbd{max-height:1200px}
+  .rci{padding:0 1.5rem 1.5rem;border-top:1px solid var(--border)}
+  .rsr{display:flex;align-items:center;gap:12px;padding:1rem 0 .75rem}
+  .rsb{font-size:2.5rem;font-weight:600;line-height:1}
+  .rsl{font-size:11px;color:var(--text-muted)}
+  .bw{flex:1}
+  .bb{height:6px;border-radius:3px;background:var(--bg2);overflow:hidden}
+  .bf{height:100%;border-radius:3px;transition:width 1s ease}
+  .rt{font-size:13px;line-height:1.7;color:var(--text-muted);margin-bottom:.875rem}
+  .verbesserung{background:var(--accent-pale);border-radius:10px;padding:12px 14px;margin-bottom:.875rem;font-size:12.5px;line-height:1.6;color:var(--text)}
+  .verbesserung strong{color:var(--accent);font-weight:600;display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .titel-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:.875rem}
+  .titel-chip{background:var(--bg);border:1px solid var(--border);border-radius:50px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--text)}
+  .rck{display:grid;gap:7px}
+  .ci{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--text);line-height:1.45}
+  .cd{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-top:1px}
+  .sg{background:#27ae60}.sy{background:#f0b429}.so{background:#e07b39}.sr{background:#e53e3e}
+  .bg2c{background:#d4f0e0;color:#1a6e3c}.by{background:#fef6d9;color:#8a6300}.bo{background:#fde8d9;color:#8a3d0f}.br{background:#fde0e0;color:#8a1a1a}
+  .scg{color:#27ae60}.scy{color:#c49200}.sco{color:#c05b1a}.scr{color:#c0302a}
+  .fg{background:#27ae60}.fy{background:#f0b429}.fo{background:#e07b39}.fr{background:#e53e3e}
+  .cok{background:#d4f0e0;color:#1a6e3c}.cno{background:#fde0e0;color:#8a1a1a}
+  .kein-potenzial{background:var(--white);border-radius:18px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem;font-size:13.5px;line-height:1.7;color:var(--text-muted)}
+  .isl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem}
+  .ig{display:grid;gap:12px}
+  .ii{background:var(--bg);border-radius:14px;padding:16px 18px;border-left:3px solid var(--accent)}
+  .ii-num{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+  .ii-titel{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px}
+  .ii-pre{font-size:12.5px;color:var(--accent);font-weight:500;margin-bottom:8px;font-style:italic}
+  .ii-desc{font-size:12.5px;color:var(--text-muted);line-height:1.6}
+  .rh{text-align:center;margin-bottom:2rem}
+  .rh h2{font-family:'Georgia',serif;font-size:1.7rem;font-weight:normal;font-style:italic;color:var(--text);margin-bottom:.3rem}
+  .rh p{font-size:12px;color:var(--text-muted);letter-spacing:.04em}
+  .rw{text-align:center;margin-top:2.5rem}
+  .rbtn{background:transparent;border:1.5px solid var(--accent);color:var(--accent);border-radius:50px;padding:11px 32px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+  .rbtn:hover{background:var(--accent);color:#faf9f5}
+  .footer{text-align:center;padding:2rem;font-size:11px;color:#c0b9ab;letter-spacing:.05em}
+  @media(max-width:600px){.form-card{padding:1.75rem 1.25rem}.g2{grid-template-columns:1fr}.tgrid{grid-template-columns:1fr}.tfm{grid-template-columns:1fr}.tarr{display:none}header{padding:2rem 1.25rem 1.5rem}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hline"></div>
+  <h1>Dein <em>Produkt-Check</em></h1>
+  <p class="sub">Finde heraus, ob deine Idee wirklich verkaufbar ist</p>
+  <p class="elara">Hi, ich bin Elara, die KI-Assistentin von Anna — und heute finden wir gemeinsam heraus, ob deine Idee wirklich verkaufbar ist und du mit ihr weitergehen solltest.</p>
+</header>
+<main>
+  <div class="form-card" id="fw">
+    <div class="g2">
+      <div class="field"><label>Name des Produkts</label><input type="text" id="fn" placeholder="z.B. Sold Out System" /></div>
+      <div class="field"><label>Preis (netto)</label><input type="text" id="fp" placeholder="z.B. 27 €" /></div>
+    </div>
+    <div class="ptyp">Produkttyp</div>
+    <div class="tgrid">
+      <div class="tc" data-val="mini" onclick="selT(this)"><div class="tc-tag">Einstieg</div><div class="tc-name">Miniprodukt</div><div class="tc-price">7 € – 47 €</div></div>
+      <div class="tc" data-val="bump" onclick="selT(this)"><div class="tc-tag">Add-on</div><div class="tc-name">Bump</div><div class="tc-price">7 € – 27 €</div></div>
+      <div class="tc" data-val="upsell" onclick="selT(this)"><div class="tc-tag">Hauptprodukt</div><div class="tc-name">Upsell</div><div class="tc-price">69 € +</div></div>
+    </div>
+    <div class="dv"></div>
+    <div class="field"><label>Thema / Worum geht es?</label><input type="text" id="ft" placeholder="z.B. Automatisierter Verkauf von digitalen Produkten über Ads" /></div>
+    <div class="field"><label>Zielgruppe</label><input type="text" id="fa" placeholder="z.B. Fotograf:innen, die nebenberuflich skalieren wollen" /></div>
+    <div class="field"><label>Warum sollte jemand bei dir kaufen? <span>(Dein USP)</span></label><textarea id="fu" placeholder="z.B. Ich habe selbst als Hochzeitsfotografin 18.000 € an einem Tag gemacht und zeige genau wie..."></textarea></div>
+    <div class="dv"></div>
+    <div class="tfm">
+      <div class="field"><label>Vorher <span>(Problem)</span></label><textarea id="fb" placeholder="z.B. Kein planbares Einkommen, jagt Kund:innen hinterher..."></textarea></div>
+      <div class="tarr"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="field"><label>Nachher <span>(Ergebnis)</span></label><textarea id="faf" placeholder="z.B. Verdient passiv, hat ein System das verkauft, freie Wochenenden..."></textarea></div>
+    </div>
+    <div class="cta">
+      <button class="btn-check" id="bc" onclick="runCheck()">
+        <span class="spin"></span>
+        <span class="bt">Produkt Idee Checken</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="results">
+    <div class="rh"><h2>Dein Analyse-Ergebnis</h2><p>Ehrliches Feedback auf Basis bewährter Verkaufsstrategien</p></div>
+    <div id="cw"></div>
+    <div class="rw"><button class="rbtn" onclick="restart()">Neue Idee analysieren</button></div>
+  </div>
+</main>
+<div class="footer">Produkt-Check · powered by KI-Analyse</div>
+
+<script>
+let selectedType='';
+function selT(el){document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selectedType=el.dataset.val;}
+function tog(c){c.classList.toggle('op');}
+const lc={stark:{label:'Sehr starkes Produkt',dc:'sg',bc:'bg2c',sc:'scg',fc:'fg'},potenzial:{label:'Hat Potenzial',dc:'sy',bc:'by',sc:'scy',fc:'fy'},mittel:{label:'Mittel',dc:'so',bc:'bo',sc:'sco',fc:'fo'},schwach:{label:'Nicht stark genug',dc:'sr',bc:'br',sc:'scr',fc:'fr'}};
+
+async function runCheck(){
+  const name=document.getElementById('fn').value.trim();
+  const price=document.getElementById('fp').value.trim();
+  const topic=document.getElementById('ft').value.trim();
+  const audience=document.getElementById('fa').value.trim();
+  const usp=document.getElementById('fu').value.trim();
+  const before=document.getElementById('fb').value.trim();
+  const after=document.getElementById('faf').value.trim();
+  if(!name||!topic||!audience||!before||!after||!selectedType){alert('Bitte fülle alle Pflichtfelder aus und wähle einen Produkttyp.');return;}
+  const btn=document.getElementById('bc');
+  btn.disabled=true;btn.classList.add('loading');btn.querySelector('.bt').textContent='Wird analysiert...';
+  const typeLabel={mini:'Miniprodukt (7–47 €)',bump:'Bump (7–27 €)',upsell:'Upsell (69 €+)'}[selectedType];
+
+  const prompt=`Du bist eine direkte, ehrliche Business-Expertin für digitale Infoprodukte und Online-Kurse im DACH-Raum. Du kennst den deutschen Markt für digitale Produkte sehr gut und weißt was sich verkauft.
+
+Bewerte diese Produktidee:
+Name: ${name}
+Preis: ${price}
+Typ: ${typeLabel}
+Thema: ${topic}
+Zielgruppe: ${audience}
+USP: ${usp}
+Vorher: ${before}
+Nachher: ${after}
+
+BEWERTUNGSREGELN:
+1. Miniprodukt verkauft sich wenn: Problem JETZT akut nervt, Lösung schnell wirkt, Zielgruppe sich sofort erkannt fühlt.
+2. Titelregeln: max 2-4 Wörter, einprägsam, benennt Ergebnis direkt. Gute Beispiele: "Mission 5", "Passives Einkommen", "Daily Sales Methode", "Angebot 2.0". SCHLECHT: Funnel, Autopilot, System wenn generisch, zu viele Wörter.
+3. Transformation muss konkret und messbar sein. Nicht "erfolgreiches Business" sondern "nach 7 Tagen hast du deine erste Buchung über Ads".
+4. 1x1x1 Regel: 1 Problem, 1 Zielgruppe, 1 Lösung.
+
+VERBESSERUNGSVORSCHLÄGE — SEHR WICHTIG:
+Für jedes Kriterium mit score unter 80 MUSS ein konkreter Verbesserungsvorschlag kommen der zeigt wie 100/100 aussieht. NICHT abstrakt, sondern mit echtem Beispiel direkt angepasst auf dieses Produkt:
+- Problemschärfe: Zeige wie das Problem schärfer formuliert werden könnte. Beispiel: "Statt 'kein planbares Einkommen' lieber: Du weißt am Montag nicht, ob du am Freitag eine Buchung hast."
+- Titelkraft: Gib 3 konkrete alternative Titel die wirklich stark sind + erkläre warum. Beispiel: "Statt 'Sold Out System' lieber: 'Erste Buchung in 7 Tagen' — weil es ein konkretes Ergebnis und eine Zeitkomponente hat."
+- Transformation: Schreibe die Transformation neu, so dass sie in 3 Sekunden verstanden wird. Beispiel: "Statt 'strukturiert Kunden gewinnen' lieber: Du bekommst deine erste Anfrage über Werbeanzeigen in 7 Tagen — ohne Kaltakquise."
+- Positionierung & USP: Formuliere den USP als konkreten Satz der sofort überzeugt. Beispiel: "Statt 'einzige am Markt' lieber: Ich habe als Hochzeitsfotografin an einem Tag 18.000 Euro gemacht — ich zeige dir Schritt für Schritt wie."
+
+Erstelle außerdem 3 alternative Produktideen mit echtem Marktpotenzial basierend auf deinem Wissen über den deutschen Markt. Titel im Format: "Name — Preheader" (Beispiel: "Angebot 2.0 — Mach deine Dienstleistung als Fotograf unvergleichbar, nie wieder Ghosting oder Preisvergleich"). Titel: kurz, emotional, einprägsam, kein Fachjargon.
+
+Antworte NUR mit JSON ohne Backticks:
+{"zusammenfassung":{"verkaufbar":true,"text":"2-3 ehrliche Sätze: Potenzial? Markt da? Was hält Menschen konkret vom Kauf ab?"},"gesamtscore":72,"lohnt_sich":true,"kriterien":[{"name":"Problemschärfe","score":82,"level":"stark","erklaerung":"2-3 direkte Sätze was gut ist und was fehlt","verbesserung":null,"checks":[{"text":"Problem ist akut und nervig","ok":true},{"text":"Zielgruppe fühlt sich sofort erkannt","ok":true},{"text":"Lösung wirkt schnell und konkret","ok":false}]},{"name":"Titelkraft","score":55,"level":"mittel","erklaerung":"2-3 Sätze warum der Titel schwach ist","verbesserung":"Statt dem aktuellen Titel lieber diese 3 Optionen — und warum sie stärker sind: [konkrete Erklärung]","titel_alternativen":["Konkreter Titel 1","Konkreter Titel 2","Konkreter Titel 3"],"checks":[{"text":"Konkretes Ergebnis erkennbar","ok":false},{"text":"Kurz und einprägsam (2-4 Wörter)","ok":true},{"text":"Keine Buzzwords oder Fachwörter","ok":false}]},{"name":"Transformation","score":78,"level":"potenzial","erklaerung":"2-3 Sätze","verbesserung":"So klingt deine Transformation wenn sie 100/100 wäre: [konkretes umgeschriebenes Beispiel direkt angepasst auf dieses Produkt]","checks":[{"text":"Vorher-Nachher ist konkret und messbar","ok":true},{"text":"Transformation ist realistisch","ok":true},{"text":"Outcome in 3 Sekunden verständlich","ok":false}]},{"name":"Positionierung & USP","score":68,"level":"potenzial","erklaerung":"2-3 Sätze","verbesserung":"So klingt dein USP wenn er wirklich überzeugt: [konkreter Satz direkt angepasst auf dieses Produkt und diese Person]","checks":[{"text":"Klarer Unterschied zur Konkurrenz","ok":false},{"text":"Persönliche Credibility spürbar","ok":true},{"text":"1x1x1 Regel eingehalten","ok":true}]}],"ideen":[{"titel":"Produktname","preheader":"Konkreter Nutzen in einem Satz — was bekomme ich, warum jetzt","beschreibung":"2-3 Sätze: worum geht es genau, welches eine Problem löst es, warum kaufen Menschen das sofort"}]}
+
+REGELN: level: stark=80+, potenzial=60-79, mittel=40-59, schwach<40. lohnt_sich: true wenn gesamtscore über 55. verbesserung: PFLICHT wenn score unter 80 — immer mit konkretem Beispiel direkt auf dieses Produkt angepasst, nie abstrakt. Preis-Wert-Passung weglassen. ideen: immer 3 Stück basierend auf Marktrecherche. Antworte ausschließlich mit dem JSON.`;
+
+  try{
+    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}]})});
+    const j=await res.json();
+    const raw=j.content.map(i=>i.text||'').join('');
+    const data=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    showResults(data);
+  }catch(e){alert('Analyse fehlgeschlagen. Bitte nochmal versuchen.');}
+  finally{btn.disabled=false;btn.classList.remove('loading');btn.querySelector('.bt').textContent='Produkt Idee Checken';}
+}
+
+function showResults(data){
+  document.getElementById('fw').style.display='none';
+  const w=document.getElementById('cw');w.innerHTML='';
+
+  const zf=document.createElement('div');zf.className='zusammenfassung';
+  const badgeCls=data.zusammenfassung.verkaufbar?'zf-ja':'zf-nein';
+  const badgeText=data.zusammenfassung.verkaufbar?'✓ Verkaufbar':'✗ Kein ausreichendes Potenzial';
+  zf.innerHTML=`<div class="zf-label">Kurze Einschätzung</div><div class="zf-badge ${badgeCls}">${badgeText}</div><div class="zf-text">${data.zusammenfassung.text}</div>`;
+  w.appendChild(zf);
+
+  data.kriterien.forEach((k,i)=>{
+    const c=lc[k.level]||lc.mittel;
+    const ch=(k.checks||[]).map(x=>`<div class="ci"><div class="cd ${x.ok?'cok':'cno'}">${x.ok?'✓':'✗'}</div><span>${x.text}</span></div>`).join('');
+    let vHtml='';
+    if(k.verbesserung){vHtml=`<div class="verbesserung"><strong>So machst du es stärker</strong>${k.verbesserung}</div>`;}
+    let taHtml='';
+    if(k.titel_alternativen&&k.titel_alternativen.length){
+      const chips=k.titel_alternativen.map(t=>`<span class="titel-chip">${t}</span>`).join('');
+      taHtml=`<div style="margin-bottom:.875rem"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:7px">Stärkere Titeloptionen</div><div class="titel-chips">${chips}</div></div>`;
+    }
+    const el=document.createElement('div');el.className='rc';el.style.animationDelay=(i*.08)+'s';
+    el.innerHTML=`<div class="rch" onclick="tog(this.closest('.rc'))"><div class="rcs ${c.dc}"></div><div class="rcb ${c.bc}">${c.label}</div><div class="rcl">${k.name}</div><div class="rct"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="rcbd"><div class="rci"><div class="rsr"><div class="rsb ${c.sc}">${k.score}</div><div class="bw"><div class="rsl">von 100 Punkten</div><div class="bb"><div class="bf ${c.fc}" style="width:${k.score}%"></div></div></div></div><p class="rt">${k.erklaerung}</p>${vHtml}${taHtml}<div class="rck">${ch}</div></div></div>`;
+    w.appendChild(el);
+  });
+
+  if(!data.lohnt_sich){
+    const el=document.createElement('div');el.className='kein-potenzial';
+    el.innerHTML=`<div class="isl" style="margin-bottom:.625rem">Mein Rat</div>Diese Idee hat in der aktuellen Form nicht genug Verkaufskraft. Schau dir die Alternativen unten an — die gehen in eine ähnliche Richtung, sind aber deutlich stärker positioniert und haben echtes Kaufpotenzial.`;
+    w.appendChild(el);
+  }
+
+  if(data.ideen&&data.ideen.length){
+    const ih=data.ideen.map((id,i)=>`<div class="ii"><div class="ii-num">Idee ${i+1}</div><div class="ii-titel">${id.titel}</div><div class="ii-pre">${id.preheader}</div><div class="ii-desc">${id.beschreibung}</div></div>`).join('');
+    const el=document.createElement('div');el.className='rc';el.style.animationDelay=(data.kriterien.length*.08)+'s';
+    const ideenLabel=data.lohnt_sich?'Ideen':'Stärkere Alternativen';
+    const ideenTitel=data.lohnt_sich?'3 verkaufsstärkere Alternativen':'3 Ideen die wirklich funktionieren';
+    el.innerHTML=`<div class="rch" onclick="tog(this.closest('.rc'))"><div class="rcs" style="background:var(--accent)"></div><div class="rcb" style="background:var(--accent-pale);color:var(--accent)">${ideenLabel}</div><div class="rcl">${ideenTitel}</div><div class="rct"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="rcbd"><div class="rci"><div style="padding:.75rem 0 0"><div class="isl">Basierend auf Marktkenntnis</div><div class="ig">${ih}</div></div></div></div>`;
+    w.appendChild(el);
+  }
+
+  const r=document.getElementById('results');r.style.display='block';r.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function restart(){
+  document.getElementById('fw').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('cw').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
