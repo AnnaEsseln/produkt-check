@@ -45,6 +45,11 @@
   .btn-check.loading .spin{display:block}
   .btn-check.loading .bt{opacity:.6}
   @keyframes sp{to{transform:rotate(360deg)}}
+  /* Fehler-Banner */
+  .err-box{display:none;background:#fde0e0;border:1px solid #f3b8b8;border-radius:12px;padding:14px 16px;margin-top:1.25rem;font-size:12.5px;line-height:1.6;color:#8a1a1a}
+  .err-box.show{display:block;animation:fu .3s ease both}
+  .err-box strong{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+  .err-box .err-detail{margin-top:7px;font-family:monospace;font-size:11px;color:#a33;background:rgba(255,255,255,.45);border-radius:7px;padding:8px 10px;word-break:break-word;white-space:pre-wrap;max-height:160px;overflow:auto}
   #results{display:none}
   .zusammenfassung{background:var(--white);border-radius:18px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem}
   .zf-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
@@ -122,11 +127,11 @@
     </div>
     <div class="dv"></div>
     <div class="field"><label>Thema / Worum geht es?</label><input type="text" id="ft" placeholder="z.B. Automatisierter Verkauf von digitalen Produkten über Ads" /></div>
-    <div class="field"><label>Zielgruppe</label><input type="text" id="fa" placeholder="z.B. Fotograf:innen, die nebenberuflich skalieren wollen" /></div>
+    <div class="field"><label>Zielgruppe</label><input type="text" id="fa" placeholder="z.B. Fotografen, die nebenberuflich skalieren wollen" /></div>
     <div class="field"><label>Warum sollte jemand bei dir kaufen? <span>(Dein USP)</span></label><textarea id="fu" placeholder="z.B. Ich habe selbst als Hochzeitsfotografin 18.000 € an einem Tag gemacht und zeige genau wie..."></textarea></div>
     <div class="dv"></div>
     <div class="tfm">
-      <div class="field"><label>Vorher <span>(Problem)</span></label><textarea id="fb" placeholder="z.B. Kein planbares Einkommen, jagt Kund:innen hinterher..."></textarea></div>
+      <div class="field"><label>Vorher <span>(Problem)</span></label><textarea id="fb" placeholder="z.B. Kein planbares Einkommen, jagt Kunden hinterher..."></textarea></div>
       <div class="tarr"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       <div class="field"><label>Nachher <span>(Ergebnis)</span></label><textarea id="faf" placeholder="z.B. Verdient passiv, hat ein System das verkauft, freie Wochenenden..."></textarea></div>
     </div>
@@ -135,6 +140,11 @@
         <span class="spin"></span>
         <span class="bt">Produkt Idee Checken</span>
       </button>
+    </div>
+    <div class="err-box" id="errBox">
+      <strong>Analyse fehlgeschlagen</strong>
+      <span id="errMsg">Bitte nochmal versuchen.</span>
+      <div class="err-detail" id="errDetail" style="display:none"></div>
     </div>
   </div>
 
@@ -152,7 +162,17 @@ function selT(el){document.querySelectorAll('.tc').forEach(c=>c.classList.remove
 function tog(c){c.classList.toggle('op');}
 const lc={stark:{label:'Sehr starkes Produkt',dc:'sg',bc:'bg2c',sc:'scg',fc:'fg'},potenzial:{label:'Hat Potenzial',dc:'sy',bc:'by',sc:'scy',fc:'fy'},mittel:{label:'Mittel',dc:'so',bc:'bo',sc:'sco',fc:'fo'},schwach:{label:'Nicht stark genug',dc:'sr',bc:'br',sc:'scr',fc:'fr'}};
 
+function showError(msg,detail){
+  const box=document.getElementById('errBox');
+  document.getElementById('errMsg').textContent=msg;
+  const d=document.getElementById('errDetail');
+  if(detail){d.style.display='block';d.textContent=detail;}else{d.style.display='none';}
+  box.classList.add('show');
+}
+function hideError(){document.getElementById('errBox').classList.remove('show');}
+
 async function runCheck(){
+  hideError();
   const name=document.getElementById('fn').value.trim();
   const price=document.getElementById('fp').value.trim();
   const topic=document.getElementById('ft').value.trim();
@@ -160,7 +180,10 @@ async function runCheck(){
   const usp=document.getElementById('fu').value.trim();
   const before=document.getElementById('fb').value.trim();
   const after=document.getElementById('faf').value.trim();
-  if(!name||!topic||!audience||!before||!after||!selectedType){alert('Bitte fülle alle Pflichtfelder aus und wähle einen Produkttyp.');return;}
+  if(!name||!topic||!audience||!before||!after||!selectedType){
+    showError('Bitte fülle alle Pflichtfelder aus und wähle einen Produkttyp.');
+    return;
+  }
   const btn=document.getElementById('bc');
   btn.disabled=true;btn.classList.add('loading');btn.querySelector('.bt').textContent='Wird analysiert...';
   const typeLabel={mini:'Miniprodukt (7–47 €)',bump:'Bump (7–27 €)',upsell:'Upsell (69 €+)'}[selectedType];
@@ -198,13 +221,44 @@ Antworte NUR mit JSON ohne Backticks:
 REGELN: level: stark=80+, potenzial=60-79, mittel=40-59, schwach<40. lohnt_sich: true wenn gesamtscore über 55. verbesserung: PFLICHT wenn score unter 80 — immer mit konkretem Beispiel direkt auf dieses Produkt angepasst, nie abstrakt. Preis-Wert-Passung weglassen. ideen: immer 3 Stück basierend auf Marktrecherche. Antworte ausschließlich mit dem JSON.`;
 
   try{
-    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:prompt}]})
+    });
+
+    // 1) HTTP-Fehler sauber abfangen und echten Grund zeigen
+    if(!res.ok){
+      let body='';
+      try{body=await res.text();}catch(_){body='(kein Body lesbar)';}
+      throw new Error('HTTP '+res.status+' '+res.statusText+'\n'+body.slice(0,500));
+    }
+
     const j=await res.json();
+
+    // 2) Pruefen, ob die API ueberhaupt content geliefert hat
+    if(!j||!Array.isArray(j.content)){
+      throw new Error('Unerwartete Antwort von /api/analyze:\n'+JSON.stringify(j).slice(0,500));
+    }
+
     const raw=j.content.map(i=>i.text||'').join('');
-    const data=JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    // 3) JSON-Parsing separat absichern (haeufigste Stelle fuer Abstuerze)
+    let data;
+    try{
+      data=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    }catch(parseErr){
+      throw new Error('Antwort war kein gueltiges JSON (evtl. abgeschnitten — max_tokens im Backend pruefen):\n'+raw.slice(0,500));
+    }
+
     showResults(data);
-  }catch(e){alert('Analyse fehlgeschlagen. Bitte nochmal versuchen.');}
-  finally{btn.disabled=false;btn.classList.remove('loading');btn.querySelector('.bt').textContent='Produkt Idee Checken';}
+  }catch(e){
+    console.error('Produkt-Check Fehler:',e);
+    showError('Es ist etwas schiefgelaufen. Details siehe unten — bitte nochmal versuchen.', (e&&e.message)?e.message:String(e));
+  }
+  finally{
+    btn.disabled=false;btn.classList.remove('loading');btn.querySelector('.bt').textContent='Produkt Idee Checken';
+  }
 }
 
 function showResults(data){
@@ -251,6 +305,7 @@ function showResults(data){
 }
 
 function restart(){
+  hideError();
   document.getElementById('fw').style.display='block';
   document.getElementById('results').style.display='none';
   document.getElementById('cw').innerHTML='';
@@ -259,4 +314,3 @@ function restart(){
 </script>
 </body>
 </html>
- 
