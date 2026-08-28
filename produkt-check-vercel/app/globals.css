@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --braun: #a26a25;
+  --warmgrau: #cfc5bd;
+  --beige: #ebe7e2;
+}
+
+html,
+body {
+  background-color: var(--beige);
+  color: #000000;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sichtbarer Fokus fuer Tastaturbedienung */
+:focus-visible {
+  outline: 2px solid var(--braun);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Druckansicht, dient gleichzeitig als PDF-Export */
+@media print {
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+}
